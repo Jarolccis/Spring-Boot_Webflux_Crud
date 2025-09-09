@@ -8,4 +8,5 @@ import reactor.core.publisher.Mono;
 public interface CustomerRepository {
     Flux<CustomerDto> findAll();
     Mono<CustomerDto> save(CustomerDto customerDto);
+    Mono<CustomerDto> update(Long id, CustomerDto customerDto);
 }
