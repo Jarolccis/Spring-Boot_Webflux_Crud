@@ -65,4 +65,20 @@ public class CustomerRepositoryImpl implements CustomerRepository {
                 });
     }
 
+    @Override
+    public Mono<CustomerDto> update(Long id, CustomerDto customerDto) {
+        String sql = "UPDATE Customers SET Code = :Code, FirstName = :FirstName, LastName = :LastName, " +
+                "Phone = :Phone, Status = :Status, UpdatedBy = :UpdatedBy, UpdatedDate = NOW() WHERE Id = :Id";
+        return databaseClient.sql(sql)
+                .bind("Code", customerDto.getCode())
+                .bind("FirstName", customerDto.getFirstName())
+                .bind("LastName", customerDto.getLastName())
+                .bind("Phone", customerDto.getPhone())
+                .bind("Status", customerDto.getStatus())
+                .bind("UpdatedBy", customerDto.getUpdatedBy())
+                .bind("Id", id)
+                .then()
+                .thenReturn(customerDto);
+    }
+
 }
