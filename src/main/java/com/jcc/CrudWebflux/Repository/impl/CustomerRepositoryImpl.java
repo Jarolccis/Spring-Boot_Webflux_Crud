@@ -19,6 +19,14 @@ public class CustomerRepositoryImpl implements CustomerRepository {
     @Autowired
     private DatabaseClient databaseClient;
 
+    @Override
+    public Mono<Void> updateExchangeRate(Long id, BigDecimal exchangeRate) {
+        String sql = "UPDATE Customers SET ExchangeRate = :ExchangeRate, UpdatedDate = getdate() WHERE Id = :Id";
+        return databaseClient.sql(sql)
+                .bind("ExchangeRate", exchangeRate)
+                .bind("Id", id)
+                .then();
+    }
 
     @Override
     public Flux<CustomerDto> findAll() {
@@ -66,9 +74,33 @@ public class CustomerRepositoryImpl implements CustomerRepository {
     }
 
     @Override
+    public Mono<CustomerDto> findById (Long id){
+        String sql = "SELECT Id, Code, FirstName, LastName, Phone, Status, CreatedBy, CreatedDate, UpdatedBy, UpdatedDate, DeletedBy, DeletedDate FROM Customers WHERE Id = :Id";
+        return databaseClient.sql(sql)
+                .bind("Id", id)
+                .map((row, metadata) -> {
+                    CustomerDto dto = new CustomerDto();
+                    dto.setId(row.get("Id", Long.class));
+                    dto.setCode(row.get("Code", String.class));
+                    dto.setFirstName(row.get("FirstName", String.class));
+                    dto.setLastName(row.get("LastName", String.class));
+                    dto.setPhone(row.get("Phone", String.class));
+                    dto.setStatus(row.get("Status", String.class));
+                    dto.setCreatedBy(row.get("CreatedBy", String.class));
+                    dto.setCreatedDate(row.get("CreatedDate", java.time.LocalDateTime.class));
+                    dto.setUpdatedBy(row.get("UpdatedBy", String.class));
+                    dto.setUpdatedDate(row.get("UpdatedDate", java.time.LocalDateTime.class));
+                    dto.setDeletedBy(row.get("DeletedBy", String.class));
+                    dto.setDeletedDate(row.get("DeletedDate", java.time.LocalDateTime.class));
+                    return dto;
+                })
+                .one(); 
+    }
+
+    @Override
     public Mono<CustomerDto> update(Long id, CustomerDto customerDto) {
         String sql = "UPDATE Customers SET Code = :Code, FirstName = :FirstName, LastName = :LastName, " +
-                "Phone = :Phone, Status = :Status, UpdatedBy = :UpdatedBy, UpdatedDate = NOW() WHERE Id = :Id";
+                "Phone = :Phone, Status = :Status, UpdatedBy = :UpdatedBy, UpdatedDate = getdate() WHERE Id = :Id";
         return databaseClient.sql(sql)
                 .bind("Code", customerDto.getCode())
                 .bind("FirstName", customerDto.getFirstName())
